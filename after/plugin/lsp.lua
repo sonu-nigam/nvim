@@ -17,12 +17,29 @@ end)
 
 require('mason').setup({})
 require('mason-lspconfig').setup({
-  ensure_installed = {'tsserver', 'rust_analyzer'},
+  ensure_installed = {'tsserver', "lua_ls"},
   handlers = {
     lsp_zero.default_setup,
     lua_ls = function()
       local lua_opts = lsp_zero.nvim_lua_ls()
       require('lspconfig').lua_ls.setup(lua_opts)
+    end,
+    tailwindcss = function()
+      --- in this function you can setup
+      --- the language server however you want. 
+      --- in this example we just use lspconfig
+
+      require('lspconfig').tailwindcss.setup({
+        settings = {
+          tailwindCSS = {
+            experimental = {
+              classRegex = { {
+                "className\\s*?:\\s*?[\"'`]([^\"'`]*).*?"
+              } },
+            },
+          },
+        },
+      })
     end,
   }
 })
@@ -40,9 +57,28 @@ cmp.setup({
   },
   formatting = lsp_zero.cmp_format(),
   mapping = cmp.mapping.preset.insert({
-    ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-    ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-    ['<C-y>'] = cmp.mapping.confirm({ select = true }),
-    ['<C-Space>'] = cmp.mapping.complete(),
+    -- ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+    -- ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
+    -- ['<C-y>'] = cmp.mapping.confirm({ select = true }),
+    -- ['<C-Space>'] = cmp.mapping.complete(),
+    -- Use Tab and shift-Tab to navigate autocomplete menu
+    ['<Tab>'] = function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        fallback()
+      end
+    end,
+    ['<S-Tab>'] = function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        fallback()
+      end
+    end,
+    ['<CR>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    },
   }),
 })
